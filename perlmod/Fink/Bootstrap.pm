@@ -188,7 +188,8 @@ GCC_MSG
 		$distribution = "10.4";
 	} elsif ($host =~ /^(powerpc|i386)-apple-darwin9\./) {
 		&print_breaking("This system no longer supported " .
-			"for current versions of fink.  Please use fink 0.34.5 or earlier.\n");
+			"for current versions of fink.  Please use fink 0.35.99 or earlier.\n");
+			# put in actual version when the time comes
 		$distribution = "10.5";
 	} elsif ($host =~ /^i386-apple-darwin10\.[0-8]\.[0-3]/) {
 		&print_breaking("\nThis version of fink supports bootstrapping under Mac OS X 10.6, " .
