@@ -237,7 +237,7 @@ sub setup_direct_svn {
 		$repository =~ s/USERNAME/$vcsuser/;
 	}
 	$cmd = "$svnpath ${verbosity}";
-	$cmdd = "$cmd checkout --depth=files ${repository} fink";
+	$cmdd = "$cmd checkout ${repository} fink";
 	if ($username ne "root") {
 		$cmdd = "/usr/bin/su $username -c '$cmdd'";
 	}
@@ -367,8 +367,10 @@ sub do_direct_svn {
 	my $errors = 0;
 
 	my $svnpath = $config->param("SvnPath");
+	my ($svnversion) = `$svnpath --version | head -n 1` =~ /version\s(\d.*\d)\s/;
 	$cmd = "$svnpath ${verbosity} update";
-	$cmd = "$cmd --depth=files";
+	# "--depth=files" isn't present on 10.5's ancient svn-1.4.
+	$cmd = "$cmd --depth=files" if (&version_cmp ("$svnversion", ">=", "1.6"));
 	$cmd = "/usr/bin/su $username -c '$cmd'" if ($username);
 	if (&execute($cmd)) {
 		$errors++;
