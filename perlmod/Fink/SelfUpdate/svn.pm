@@ -239,6 +239,7 @@ sub setup_direct_svn {
 	$cmd = "$svnpath ${verbosity}";
 	
 	my $dont_recurse;
+	my ($svnversion) = `$svnpath --version | head -n 1` =~ /version\s(\d.*\d)\s/;
 	if (&version_cmp ("$svnversion", "<<", "1.6")) {
 		$dont_recurse = "--non-recursive"
 	} else {
