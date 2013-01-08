@@ -5,7 +5,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2011 The Fink Package Manager Team
+# Copyright (c) 2001-2013 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -38,7 +38,8 @@ use strict;
 use warnings;
 
 our $VERSION = 1.00;
-my $vcs = "svn"; # TODO: "SVN" ? "Subversion" ?
+my $vcs = "Subversion"; # name of the format
+my $vcs_lc = "svn"; # name of the executable
 
 =head1 NAME
 
@@ -55,34 +56,14 @@ See documentation for the Fink::SelfUpdate base class.
 =item system_check
 
 This method builds packages from source, so it requires the
-"dev-tools" virtual package.
+"dev-tools" virtual package.  This is checked via
+Fink::Selfupdate::Base->devtools_check($vcs,$vcs_path);
 
 =cut
 
 sub system_check {
 	require Fink::Config;
 	my $class = shift;  # class method for now
-
-	my ($line2,$line4)=("","");
-	{
-		my $osxversion=Fink::VirtPackage->query_package("macosx");
-		if (&version_cmp ("$osxversion", "<<", "10.5")) {
-			$line2="Xcode, available on your original OS X install disk, or from "; 
-		} elsif (&version_cmp ("$osxversion", "<<", "10.6")) {
-			$line2="Xcode, available on your original OS X install disk, from the App Store, or from ";
-		} else {
-			$line2="Xcode, or at least the Command Line Tools for Xcode, available from the App Store, or from ";
-			$line4=". The Command Line Tools package is also available via the Downloads tab of the Xcode 4.3.x Preferences";
-		}
-	}
-
-	if (not Fink::VirtPackage->query_package("dev-tools")) {
-		warn "Before changing your selfupdate method to '$vcs', you must install ".
-		     $line2.
-		     "http://connect.apple.com (after free registration)".
-		     $line4.".\n";
-		return 0;
-	}
 
 	my $svnpath;
 	if (-x "$basepath/bin/svn") {
@@ -98,6 +79,9 @@ sub system_check {
 
 	$config->set_param("SvnPath", $svnpath);
 	$config->save;
+
+	# Check for devtools, since folks won't be able to build without them.
+	return 0 unless $class->devtools_check($vcs,$svnpath);
 
 	return 1;
 }

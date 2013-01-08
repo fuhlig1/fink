@@ -55,34 +55,14 @@ See documentation for the Fink::SelfUpdate base class.
 =item system_check
 
 This method builds packages from source, so it requires the
-"dev-tools" virtual package.
+"dev-tools" virtual package.  This is checked via
+Fink::Selfupdate::Base->devtools_check($vcs,$vcs_path);
 
 =cut
 
 sub system_check {
 	require Fink::Config;
 	my $class = shift;  # class method for now
-
-	my ($line2,$line4)=("","");
-	{
-		my $osxversion=Fink::VirtPackage->query_package("macosx");
-		if (&version_cmp ("$osxversion", "<<", "10.5")) {
-			$line2="Xcode, available on your original OS X install disk, or from "; 
-		} elsif (&version_cmp ("$osxversion", "<<", "10.6")) {
-			$line2="Xcode, available on your original OS X install disk, from the App Store, or from ";
-		} else {
-			$line2="Xcode, or at least the Command Line Tools for Xcode, available from the App Store, or from ";
-			$line4=". The Command Line Tools package is also available via the Downloads tab of the Xcode 4.3.x Preferences";
-		}
-	}
-
-	if (not Fink::VirtPackage->query_package("dev-tools")) {
-		warn "Before changing your selfupdate method to 'rsync', you must install ".
-		     $line2.
-		     "http://connect.apple.com (after free registration)".
-		     $line4.".\n";
-		return 0;
-	}
 
 	my $gitpath;
 	if (-x "$basepath/bin/git") {
@@ -99,7 +79,10 @@ sub system_check {
 	$config->set_param("GitPath", $gitpath);
 	$config->save;
 
-return 1;
+	# Check for devtools, since folks won't be able to build without them.
+	return 0 unless $class->devtools_check($vcs,$gitpath);
+
+	return 1;
 }
 
 sub clear_metadata {
