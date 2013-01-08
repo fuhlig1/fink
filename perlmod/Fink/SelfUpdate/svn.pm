@@ -237,7 +237,15 @@ sub setup_direct_svn {
 		$repository =~ s/USERNAME/$vcsuser/;
 	}
 	$cmd = "$svnpath ${verbosity}";
-	$cmdd = "$cmd checkout ${repository} fink";
+	
+	my $dont_recurse;
+	if (&version_cmp ("$svnversion", "<<", "1.6")) {
+		$dont_recurse = "--non-recursive"
+	} else {
+		$dont_recurse = "--depth=files";
+	}
+	
+	$cmdd = "$cmd checkout $dont_recurse ${repository} fink";
 	if ($username ne "root") {
 		$cmdd = "/usr/bin/su $username -c '$cmdd'";
 	}
@@ -369,8 +377,13 @@ sub do_direct_svn {
 	my $svnpath = $config->param("SvnPath");
 	my ($svnversion) = `$svnpath --version | head -n 1` =~ /version\s(\d.*\d)\s/;
 	$cmd = "$svnpath ${verbosity} update";
-	# "--depth=files" isn't present on 10.5's ancient svn-1.4.
-	$cmd = "$cmd --depth=files" if (&version_cmp ("$svnversion", ">=", "1.6"));
+	# "--depth=files" isn't present on 10.5's ancient svn-1.4.  
+	# I'm not sure about 1.5, so we'll just set the break at 10.6.
+	if (&version_cmp ("$svnversion", "<<", "1.6")) {
+		$cmd = "$cmd --non-recursive"
+	} else {
+		$cmd = "$cmd --depth=files";
+	}
 	$cmd = "/usr/bin/su $username -c '$cmd'" if ($username);
 	if (&execute($cmd)) {
 		$errors++;
