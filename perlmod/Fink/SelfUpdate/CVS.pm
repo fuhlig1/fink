@@ -39,7 +39,8 @@ use warnings;
 
 my $cvs="/usr/bin/cvs"; # Only one provider as of 10.5.
 our $VERSION = 1.00;
-my $vcs = "CVS"; # TODO: "CVS" or "cvs" ? Perhaps we need two variables?
+my $vcs = "CVS"; # name of the format
+my $vcs_lc = "cvs"; # name of the executable
 
 =head1 NAME
 
@@ -56,37 +57,15 @@ See documentation for the Fink::SelfUpdate base class.
 =item system_check
 
 This method builds packages from source, so it requires the
-"dev-tools" virtual package.
+"dev-tools" virtual package.  This is checked via
+Fink::Selfupdate::Base->devtools_check($vcs,$vcs_path);
 
 =cut
 
 sub system_check {
 	my $class = shift;  # class method for now
 
-	my ($line2,$line4)=("","");
-	{
-		my $osxversion=Fink::VirtPackage->query_package("macosx");
-		if (&version_cmp ("$osxversion", "<<", "10.6")) {
-			$line2="\nXcode, available on your original OS X install disk, or from "; 
-		} elsif (&version_cmp ("$osxversion", "<<", "10.7")) {
-			$line2="\nXcode, available on your original OS X install disk, from the App Store, or from\n" ;
-		} elsif (&version_cmp ("$osxversion", "<<", "10.8")) {
-			$line2 = ":\n* Xcode 4.1.x or Xcode 4.2.x from the App store or from\n"; 
-			$line4 = "\n* or the Xcode Command Line Tools package,\nwhich is available from connect.apple.com\nor via the Downloads tab of the Preferences in Xcode 4.3.x";
-		} else {
-			$line2 = "\nthe Xcode Command Line Tools package from\n"; 
-			$line4 = ",\nor via the Downloads tab of the Xcode Preferences";
-		}
-	}
-
-	unless ((-x $cvs) and Fink::VirtPackage->query_package("dev-tools")) {
-		warn "Before changing your selfupdate method to 'cvs', you must install".
-		     $line2.
-		     "http://connect.apple.com (after free registration)".
-		     $line4.".\n";
-		return 0;
-	}
-
+	return 0 unless $class->devtools_check($vcs_lc,$cvs);
 	return 1;
 }
 
@@ -163,7 +142,7 @@ sub setup_direct_cvs {
 
 	print "\n";
 	$username =
-		&prompt("Fink has the capability to run the $vcs commands as a ".
+		&prompt("Fink has the capability to run the $vcs_lc commands as a ".
 				"normal user. That has some advantages - it uses that ".
 				"user's $vcs settings files and allows the package ".
 				"descriptions to be edited and updated without becoming ".
@@ -180,7 +159,7 @@ sub setup_direct_cvs {
 	print "\n";
 	$vcsuser =
 		&prompt("For Fink developers only: ".
-				"Enter your SourceForge login name to set up full CVS access. ".
+				"Enter your SourceForge login name to set up full $vcs access. ".
 				"Other users, just press return to set up anonymous ".
 				"read-only access.",
 				default => "anonymous");
@@ -292,7 +271,7 @@ sub setup_direct_cvs {
 	chdir $tempdir or die "Can't cd to $tempdir: $!\n";
 
 	if (not -d $tempfinkdir) {
-		die "The $vcs command did not report an error, but the directory '$tempfinkdir' ".
+		die "The $vcs_lc command did not report an error, but the directory '$tempfinkdir' ".
 			"doesn't exist as expected. Strange.\n";
 	}
 
@@ -374,7 +353,7 @@ sub do_direct_cvs {
 
 	@sb = stat("$descdir/CVS");
 
-	$msg = "I will now run the $vcs command to retrieve the latest package descriptions. ";
+	$msg = "I will now run the $vcs_lc command to retrieve the latest package descriptions. ";
 
 	if ($sb[4] != 0 and $> != $sb[4]) {
 		($username) = getpwuid($sb[4]);
