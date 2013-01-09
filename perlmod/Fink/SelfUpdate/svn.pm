@@ -224,7 +224,7 @@ sub setup_direct_svn {
 	
 	my $dont_recurse;
 	my ($svnversion) = `$svnpath --version | head -n 1` =~ /version\s(\d.*\d)\s/;
-	if (&version_cmp ("$svnversion", "<<", "1.6")) {
+	if (&version_cmp ("$svnversion", "<<", "1.5")) {
 		$dont_recurse = "--non-recursive"
 	} else {
 		$dont_recurse = "--depth=files";
@@ -363,8 +363,7 @@ sub do_direct_svn {
 	my ($svnversion) = `$svnpath --version | head -n 1` =~ /version\s(\d.*\d)\s/;
 	$cmd = "$svnpath ${verbosity} update";
 	# "--depth=files" isn't present on 10.5's ancient svn-1.4.  
-	# I'm not sure about 1.5, so we'll just set the break at 10.6.
-	if (&version_cmp ("$svnversion", "<<", "1.6")) {
+	if (&version_cmp ("$svnversion", "<<", "1.5")) {
 		$cmd = "$cmd --non-recursive"
 	} else {
 		$cmd = "$cmd --depth=files";
