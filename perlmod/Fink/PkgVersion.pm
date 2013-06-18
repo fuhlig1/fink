@@ -1182,6 +1182,10 @@ sub get_script {
 				# path-prefix-clang wraps gcc and g++ but system-perl
 				# configure hardcodes gcc-4.x, which is not wrapped
 				$makeflags = ' CC=gcc CXX=g++';
+			} elsif ($self->get_subtype('perl') eq '5.12.5' and Fink::Services::get_kernel_vers() eq '13') {
+				# path-prefix-clang wraps gcc and g++ but system-perl
+				# configure hardcodes gcc-4.x, which is not wrapped
+				$makeflags = ' CC=gcc CXX=g++';
 			}
 			$default_script =
 				"$perlcmd Makefile.PL \%c\n".
