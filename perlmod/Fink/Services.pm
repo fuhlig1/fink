@@ -1254,6 +1254,7 @@ selection cannot be determined.
 
 sub gcc_selected {
 	# this should work anywhere we support, really
+	my $osxversion = Fink::Services::get_kernel_vers();
 	if (-l '/usr/bin/gcc') {
 		my $link = readlink('/usr/bin/gcc');
 		if ($link =~ /gcc-(\d+\.\d+)/) {
@@ -1261,6 +1262,8 @@ sub gcc_selected {
 		} else {
 			print STDERR "WARNING: /usr/bin/gcc is not a symlink!";
 		}
+	} elsif ($osxversion >= 13 and -e '/usr/bin/gcc') {
+		return 4.2;
 	}
 	return 0;
 }
