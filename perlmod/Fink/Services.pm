@@ -1306,6 +1306,7 @@ sub enforce_gcc {
 		'10.6' => '4.2',
 		'10.7' => '4.2',
 		'10.8' => '4.2',
+		'10.9' => '4.2'
 	);
 	my %gcc_abi_default = (
 		'2.95' => '2.95',
@@ -1415,6 +1416,7 @@ sub get_darwin_equiv {
 		'10' => '10.6',
 		'11' => '10.7',
 		'12' => '10.8',
+		'13' => '10.9',
 	);
 	my $kernel_vers = get_kernel_vers();
 	return $darwin_osx{$kernel_vers} || '10.' . ($kernel_vers-4);
