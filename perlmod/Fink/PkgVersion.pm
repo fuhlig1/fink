@@ -1182,7 +1182,7 @@ sub get_script {
 				# path-prefix-clang wraps gcc and g++ but system-perl
 				# configure hardcodes gcc-4.x, which is not wrapped
 				$makeflags = ' CC=gcc CXX=g++';
-			} elsif ($self->get_subtype('perl') eq '5.12.5' and Fink::Services::get_kernel_vers() eq '13') {
+			} elsif ($self->get_subtype('perl') eq '5.16.2' and Fink::Services::get_kernel_vers() eq '13') {
 				# path-prefix-clang wraps gcc and g++ but system-perl
 				# configure hardcodes gcc-4.x, which is not wrapped
 				$makeflags = ' CC=gcc CXX=g++';
@@ -5113,7 +5113,7 @@ sub get_env {
 			# first 'g++' in the path (symbol-munging binary compatibility)
 			$pathprefix = ensure_gpp_prefix('4.0');
 		}
-		if ($config->param("Distribution") eq "10.6" || $config->param("Architecture") eq "x86_64") {
+		if ($config->param("Distribution") eq "10.6" || ( $config->param("Distribution") eq "10.5" && $config->param("Architecture") eq "x86_64")) {
 			# Use single-architecture compiler-wrapper on 10.6. Also
 			# override on older 10.x (gcc3.3 & 10.4T not supported)
 			$pathprefix = ensure_gpp106_prefix($config->param("Architecture"));
@@ -5323,7 +5323,11 @@ sub get_perl_dir_arch {
 				# 10.8 system-perl is 5.12.4, but the only supplied
 				# interp is /usr/bin/perl5.12 (not perl5.12.4)
 				$perlcmd = "/usr/bin/arch -%m perl5.12" ;
-			} elsif ($perlversion gt  "5.12" and Fink::Services::get_kernel_vers() gt '12') {
+			} elsif ($perlversion eq  "5.16.2" and Fink::Services::get_kernel_vers() eq '13') {
+				# 10.9 system-perl is 5.16.2, but the only supplied
+				# interp is /usr/bin/perl5.16 (not perl5.16.2)
+				$perlcmd = "/usr/bin/arch -%m perl5.16" ;
+			} elsif ($perlversion gt  "5.16" and Fink::Services::get_kernel_vers() gt '13') {
 				# The above pattern is likely to continue
 				$perlversion = s/5\.(\d+).*/5.$1/;	
 				$perlcmd = "/usr/bin/arch -%m perl$perlversion" ;
