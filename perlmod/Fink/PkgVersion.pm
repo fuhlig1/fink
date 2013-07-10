@@ -4805,6 +4805,52 @@ sub phase_purge_recursive {
 	Fink::PkgVersion->dpkg_changed;
 }
 
+=item ensure_libcxx_prefix
+
+	my $prefix_path = ensure_libcxx_prefix;
+
+Ensures that a path-prefix directory exists to use libcxx wrapper for the C++ compilers.
+Returns the path to the resulting directory.
+
+=cut
+
+sub ensure_libcxx_prefix {
+	my $dir = "$basepath/var/lib/fink/path-prefix-libcxx";
+	unless (-d $dir) {
+		mkdir_p $dir or die "Path-prefix dir $dir cannot be created!\n";
+	}
+
+	my $gpp = "$dir/compiler_wrapper";
+	unless (-x $gpp) {
+		open GPP, ">$gpp" or die "Path-prefix file $gpp cannot be created!\n";
+		print GPP <<EOF;
+#!/bin/sh
+compiler=\${0##*/}
+save_IFS="\$IFS"
+IFS=:
+newpath=
+for dir in \$PATH ; do
+  case \$dir in
+    *var/lib/fink/path-prefix*) ;;
+    *) newpath="\${newpath:+\${newpath}:}\$dir" ;;
+  esac
+done
+IFS="\$save_IFS"
+export PATH="\$newpath"
+exec \$compiler -stdlib=libc++ "\$@"
+EOF
+		close GPP;
+		chmod 0755, $gpp or die "Path-prefix file $gpp cannot be made executable!\n";
+	}
+
+	foreach my $cpp ("$dir/c++", "$dir/g++", "$dir/clang++") {
+		unless (-l $cpp) {
+			symlink 'compiler_wrapper', $cpp or die "Path-prefix link $cpp cannot be created!\n";
+		}
+	}
+
+	return $dir;
+}
 
 =item ensure_clang_prefix
 
@@ -5122,6 +5168,10 @@ sub get_env {
 			# Use clang for gcc/g++ on darwin11/12 and later. Only
 			# x86_64 supported so can override single-arch wrappers.
  			$pathprefix = ensure_clang_prefix();
+		}
+		if  ($config->param("Distribution") ge "10.9") {
+			# Use -stdlib=libc++ for c++/g++/clang++ on darwin13 and later.
+ 			$pathprefix = ensure_libcxx_prefix();
 		}
 		$script_env{'PATH'} = "$pathprefix:" . $script_env{'PATH'};
 	}
