@@ -340,6 +340,10 @@ sub pkgversions_from_properties {
 			# refeed ourselves with each one in turn
 			my $type = $1;
 			my @subtypes = split ' ', $2;
+			if ($type eq "perl" or $type eq "systemperl") {
+				my $perlversion = get_system_perl_version;
+				push @subtypes, $perlversion if ( not grep {$perlversion eq $_} @subtypes );
+			}
 			if ($subtypes[0] =~ /^boolean$/i) {
 				# a list of (boolean) has special meaning
 				@subtypes = ('','.');
