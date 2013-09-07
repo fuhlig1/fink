@@ -406,7 +406,7 @@ directories exist.
 					($dir) = ($javadir =~ m|(\d+\.\d+\.\d+).*jdk|) ;
 					$java_test_dir = "$javadir/bin";
 					($java_cmd_dir) = ($java_test_dir =~ m|/.*/((.*)?jdk/.*/bin)|);
-					$java_inc_dir = $java_cmd_dir;			
+					$java_inc_dir = $java_cmd_dir;
 					$java_inc_dir =~ s/bin/include/;
 				}
 				# chop the version down to major/minor without dots
@@ -637,10 +637,10 @@ to make it visible to its own CLI tools and to Fink.
 END
 	$hash->{compilescript} = &gen_compile_script($hash);
 
-    chomp(my $xcodepath=`xcode-select -print-path 2>/dev/null`);
-    # Xcode 4.3+ is relocatable
-    my $result=`defaults read $xcodepath/../version CFBundleShortVersionString 2>&1`;
-    my $xcode_app_version; # to use in the next entry
+	chomp(my $xcodepath=`xcode-select -print-path 2>/dev/null`);
+	# Xcode 4.3+ is relocatable
+	my $result=`defaults read $xcodepath/../version CFBundleShortVersionString 2>&1`;
+	my $xcode_app_version; # to use in the next entry
 	if ($?) {
 		$result = `defaults read $xcodepath/Applications/Xcode.app/Contents/version CFBundleShortVersionString 2>&1`;
 	}
@@ -689,26 +689,26 @@ from Apple at:
 (free registration required).  
 END
 	$hash->{compilescript} = &gen_compile_script($hash);
-    	my $osxversion = Fink::Services::get_kernel_vers();
-    # for Xcode 4.2.1 and earlier, this will be the same as 
-    # the version of xcode.app
-    if ( defined ($xcode_app_version) && Fink::Services::version_cmp ("$xcode_app_version",'<<','4.3') ) {
+		my $osxversion = Fink::Services::get_kernel_vers();
+	# for Xcode 4.2.1 and earlier, this will be the same as
+	# the version of xcode.app
+	if ( defined ($xcode_app_version) && Fink::Services::version_cmp ("$xcode_app_version",'<<','4.3') ) {
 		$hash->{version} = $xcode_app_version . '-1';
 		print STDERR $xcode_app_version, "\n" if $options{debug};
 		$hash->{status} = STATUS_PRESENT;
-    } else {
-    # For Xcode 4.3.0 and later (as far as we know) get the CLI tools version
-    # via pkgutil.  The version string currently looks like:
-    #	<Xcode major>.<Xcode minor>.<Xcode micro>.0.1.<build_date>
-    # e.g. 4.3.0.0.1.1249367152 for the "late March 2012" CLI tools.
-    # We'll take the whole thing as the version.
-        my $receipt_to_check;
-        if ($osxversion >= 13) {
-        	chomp($receipt_to_check = "com.apple.pkg.CLTools_Executables");
-        } else {
-            chomp($receipt_to_check = "com.apple.pkg.DeveloperToolsCLI");
-        } 
-        my $result = `pkgutil --pkg-info $receipt_to_check 2>&1`; 
+	} else {
+		# For Xcode 4.3.0 and later (as far as we know) get the CLI tools version
+		# via pkgutil.  The version string currently looks like:
+		#	<Xcode major>.<Xcode minor>.<Xcode micro>.0.1.<build_date>
+		# e.g. 4.3.0.0.1.1249367152 for the "late March 2012" CLI tools.
+		# We'll take the whole thing as the version.
+		my $receipt_to_check;
+		if ($osxversion >= 13) {
+			chomp($receipt_to_check = "com.apple.pkg.CLTools_Executables");
+		} else {
+			chomp($receipt_to_check = "com.apple.pkg.DeveloperToolsCLI");
+		}
+		my $result = `pkgutil --pkg-info $receipt_to_check 2>&1`;
 		if (not $?) {
 			# didn't fail
 			# iterate over output lines and grab version
@@ -731,7 +731,7 @@ END
 				print STDERR "unknown:\n$result\n";	# dump command's own diagnostics
 			}
 		}
-    }
+	}
 	$self->{$hash->{package}} = $hash;
 
 =item "system-sdk-*"
@@ -773,7 +773,7 @@ as part of the Xcode tools.
 	{
 		chomp (my $testpath=`xcode-select -print-path 2>/dev/null`);
 		# avoid pathological xcodebuild path case
-		my @sdkread=`xcodebuild -version -sdk 2>&1` unless $testpath eq '/'; 
+		my @sdkread=`xcodebuild -version -sdk 2>&1` unless $testpath eq '/';
 		foreach (@sdkread) {
 			chomp;
 			$sdkpath=$1 if /Path:\s(.*)MacOSX.*\.sdk/;
@@ -828,9 +828,9 @@ END
 			$hash->{compilescript} = &gen_compile_script($hash);
 			if (-d "$sdkpath$dir" ) {
 				$hash->{status} = STATUS_PRESENT;
-				$self->{$hash->{package}} = $hash;			
 				$self->{$hash->{package}} = $hash;
-				print STDERR "found\n" if $options{debug};			
+				$self->{$hash->{package}} = $hash;
+				print STDERR "found\n" if $options{debug};
 			} else {
 				$self->{$hash->{package}} = $hash
 					unless (exists $self->{$hash->{package}}->{status} and $self->{$hash->{package}}->{status} eq STATUS_PRESENT);
@@ -1018,7 +1018,7 @@ the successful execution of "gcc --version".
 	{
 		# force presence of structs for some possible compilers
 		# list each as %n=>%v
-		my %expected_gcc; 
+		my %expected_gcc;
 		
 		if ($osxversion == 9) {
 			%expected_gcc = (
@@ -1052,9 +1052,9 @@ The clang virtual package is considered present based on
 the successful execution of "/usr/bin/clang -v".
 
 =cut
-    
-    # possible for 10.6 and later
-    if ($osxversion >= 10) {
+
+	# possible for 10.6 and later
+	if ($osxversion >= 10) {
 		print STDERR "- checking for /usr/bin/clang:\n" if ($options{debug});
 		if (opendir(DIR, "/usr/bin")) {
 			if (open(CLANG, '/usr/bin/clang -### -v -x c /dev/null 2>&1 |')) {
@@ -1112,9 +1112,9 @@ The llvm-gcc virtual package is considered present based on
 the successful execution of "/usr/bin/llvm-gcc -v".
 
 =cut
-    
-    # possible for 10.6 - 10.8
-    if ($osxversion >= 10 && $osxversion < 13) {
+
+	# possible for 10.6 - 10.8
+	if ($osxversion >= 10 && $osxversion < 13) {
 		print STDERR "- checking for /usr/bin/llvm-gcc:\n" if ($options{debug});
 		if (opendir(DIR, "/usr/bin")) {
 			if (open(LLVM, '/usr/bin/llvm-gcc -### -v -x c /dev/null 2>&1 |')) {
